@@ -34,35 +34,42 @@ const styles = {
   }
 };
 
-export function RPSCard({ user, type }) {
+export function RPSCard({ type, func, ready }) {
   const [clicked, setClicked] = useState(false);
+  // clear action
+  if (ready === false && clicked === true) setClicked(false);
+
   const items = {
-    rock: {
+    r: {
       logo: require("../../assets/images/rock.png"),
       label: "Rock"
     },
-    paper: {
+    p: {
       logo: require("../../assets/images/paper.png"),
       label: "Paper"
     },
-    scissors: {
+    s: {
       logo: require("../../assets/images/scissors.png"),
       label: "Scissors"
     }
   };
+  const clickedStyle = clicked
+    ? { ...styles.logo }
+    : { ...styles.logo, opacity: 0.2 };
+
+  // handle action
+  function handleClick() {
+    setClicked(!clicked);
+    func(type);
+  }
   return (
     <div style={styles.container}>
       <Button
         variant="contained"
         style={styles.btnWrapper}
-        onClick={() => setClicked(!clicked)}
+        onClick={() => handleClick()}
       >
-        <img
-          src={items[type].logo}
-          style={
-            clicked ? { ...styles.logo } : { ...styles.logo, opacity: 0.2 }
-          }
-        />
+        <img src={items[type].logo} style={clickedStyle} alt={type} />
       </Button>
     </div>
   );
