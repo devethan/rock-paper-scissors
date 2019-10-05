@@ -2,82 +2,96 @@ import React from "react";
 import { RPSCard } from "./components/ItemCard";
 
 import { inject, observer } from "mobx-react";
-
-const CLIENT_WIDTH = window.innerWidth;
 const CLIENT_HEIGHT = window.innerHeight;
 
-const App = inject("store")(
-  observer(({ store }) => {
-    console.log(document.body.clientWidth);
-    const { ready, com, user } = store;
-    const { setReady, setCom, setUser, clearState } = store;
-
-    // calc score
-    function calc(user, com) {
-      if (user && user === com) return "none"; // draw
-      const resultSet = {
-        rs: "user",
-        rp: "com",
-        pr: "user",
-        ps: "com",
-        sr: "com",
-        sp: "user"
-      };
-      return resultSet[`${user}${com}`]; // score or none of state
-    }
-
-    // set item
-    const func = {
-      user: item => setUser(item),
-      com: item => setCom(item)
+@inject("store")
+@observer
+class App extends React.Component {
+  ModalScreen = ({ end }) => {
+    const modalStyle = end
+      ? styles.modalContainer
+      : {
+          ...styles.modalContainer,
+          justifyContent: "center"
+        };
+    const modalBtnStyle = end ? styles.modalBtn : styles.msg;
+    const modalFunc = () => {
+      const ready = this.props.store.ready;
+      this.props.store.setReady(!ready);
+      if (ready) this.props.store.clearState();
     };
-
     return (
-      <div style={styles.container}>
-        <ActionBoundary user="com" func={func} ready={ready} />
-        <MsgBoundary func={{ ready, setReady }} winner={calc(user, com)} />
-        <ActionBoundary user="user" func={func} ready={ready} />
-        {calc(user, com) && <EndModal clear={clearState} />}
+      <div style={modalStyle}>
+        <div style={modalBtnStyle} onClick={modalFunc}>
+          {end ? "Restart" : "You ready?"}
+        </div>
       </div>
     );
-  })
-);
-
-function EndModal({ clear }) {
-  return (
-    <div style={styles.modalContainer}>
-      <div style={styles.modalBtn} onClick={() => clear()}>
-        Restart
-      </div>
-    </div>
-  );
-}
-
-function MsgBoundary({ func: { ready, setReady }, winner }) {
-  const resultMsg = {
-    user: "You win",
-    com: "You lose",
-    none: "You draw"
   };
-  return (
-    <div style={styles.msgBoundary} onClick={() => setReady(true)}>
-      <p style={styles.msg}>{ready ? resultMsg[winner] : `Ready`}</p>
-    </div>
-  );
-}
 
-function ActionBoundary({ user, ready, func }) {
-  // style
-  const readyStyle = ready
-    ? { ...styles.actionBoundary }
-    : { ...styles.actionBoundary, visibility: "hidden" };
-  return (
-    <div style={readyStyle}>
-      <RPSCard user={user} type="r" func={func[user]} ready={ready} />
-      <RPSCard user={user} type="s" func={func[user]} ready={ready} />
-      <RPSCard user={user} type="p" func={func[user]} ready={ready} />
-    </div>
-  );
+  MsgBoundary = () => {
+    const resultMsg = {
+      user: "You win",
+      com: "You lose",
+      none: "You draw"
+    };
+    return (
+      <div style={styles.msgBoundary}>
+        <p style={styles.msg}>{resultMsg[this.props.store.calc]}</p>
+      </div>
+    );
+  };
+
+  ActionBoundary = ({ user }) => {
+    // style
+    const readyStyle = this.props.store.ready
+      ? { ...styles.actionBoundary }
+      : { ...styles.actionBoundary, visibility: "hidden" };
+
+    const func = {
+      user: text => this.props.store.setUser(text),
+      com: text => this.props.store.setCom(text)
+    };
+    return (
+      <div style={readyStyle}>
+        <RPSCard
+          user={user}
+          type="r"
+          func={func[user]}
+          ready={this.props.store.ready}
+        />
+        <RPSCard
+          user={user}
+          type="s"
+          func={func[user]}
+          ready={this.props.store.ready}
+        />
+        <RPSCard
+          user={user}
+          type="p"
+          func={func[user]}
+          ready={this.props.store.ready}
+        />
+      </div>
+    );
+  };
+
+  render() {
+    return (
+      <div style={styles.container}>
+        {this.props.store.ready ? (
+          <>
+            <this.ActionBoundary user="com" />
+            <this.MsgBoundary />
+            <this.ActionBoundary user="user" />
+            {this.props.store.calc && <this.ModalScreen end />}
+          </>
+        ) : (
+          <this.ModalScreen />
+        )}
+      </div>
+    );
+  }
 }
 
 const styles = {
@@ -97,7 +111,12 @@ const styles = {
     alignItems: "center",
     flexDirection: "column"
   },
-  msg: { fontSize: "10vh", fontWeight: "600", color: "whitesmoke" },
+  msg: {
+    fontSize: "10vh",
+    fontWeight: "600",
+    color: "whitesmoke",
+    cursor: "pointer"
+  },
   actionBoundary: {
     display: "flex",
     flexDirection: "row",

@@ -1,34 +1,37 @@
-import { observable, action, decorate } from "mobx";
+import { observable, action, computed } from "mobx";
 
 class Store {
-  ready = false;
-  com = null;
-  user = null;
+  @observable ready = false;
+  @observable com = null;
+  @observable user = null;
 
-  setReady = bool => {
+  @action setReady = bool => {
     this.ready = bool;
   };
-  setCom = item => {
+  @action setCom = item => {
     this.com = item;
   };
-  setUser = item => {
+  @action setUser = item => {
     this.user = item;
   };
-  clearState = () => {
+  @action clearState = () => {
     this.ready = false;
     this.com = null;
     this.user = null;
   };
-}
 
-decorate(Store, {
-  ready: observable,
-  com: observable,
-  user: observable,
-  setReady: action,
-  setCom: action,
-  setUser: action,
-  clearState: action
-});
+  @computed get calc() {
+    if (this.user && this.user === this.com) return "none"; // draw
+    const resultSet = {
+      rs: "user",
+      rp: "com",
+      pr: "user",
+      ps: "com",
+      sr: "com",
+      sp: "user"
+    };
+    return resultSet[`${this.user}${this.com}`]; // score or none of state
+  }
+}
 
 export { Store };
