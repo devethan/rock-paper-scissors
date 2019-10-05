@@ -1,50 +1,54 @@
-import React, { useState } from "react";
+import React from "react";
 import { RPSCard } from "./components/ItemCard";
 
-function App() {
-  const [ready, setReady] = useState(false);
-  const [com, setCom] = useState(null);
-  const [user, setUser] = useState(null);
-  console.log("user", user);
-  console.log("com", com);
+import { inject, observer } from "mobx-react";
 
-  // calc score
-  function calc(user, com) {
-    if (user && user === com) return "none"; // draw
-    const resultSet = {
-      rs: "user",
-      rp: "com",
-      pr: "user",
-      ps: "com",
-      sr: "com",
-      sp: "user"
+const App = inject("store")(
+  observer(({ store }) => {
+    const { ready, com, user } = store;
+    const { setReady, setCom, setUser } = store;
+    // const [ready, setReady] = useState(false);
+    // const [com, setCom] = useState(null);
+    // const [user, setUser] = useState(null);
+
+    // calc score
+    function calc(user, com) {
+      if (user && user === com) return "none"; // draw
+      const resultSet = {
+        rs: "user",
+        rp: "com",
+        pr: "user",
+        ps: "com",
+        sr: "com",
+        sp: "user"
+      };
+      return resultSet[`${user}${com}`]; // score or none of state
+    }
+
+    // set item
+    const func = {
+      user: item => setUser(item),
+      com: item => setCom(item)
     };
-    return resultSet[`${user}${com}`]; // score or none of state
-  }
 
-  // set item
-  const func = {
-    user: item => setUser(item),
-    com: item => setCom(item)
-  };
+    // clear State
+    function clear() {
+      // window.location.reload();
+      setReady(false);
+      setCom(null);
+      setUser(null);
+    }
 
-  // clear State
-  function clear() {
-    // window.location.reload();
-    setReady(false);
-    setCom(null);
-    setUser(null);
-  }
-
-  return (
-    <div style={styles.container}>
-      <ActionBoundary user="com" func={func} ready={ready} />
-      <MsgBoundary func={{ ready, setReady }} winner={calc(user, com)} />
-      <ActionBoundary user="user" func={func} ready={ready} />
-      {calc(user, com) && <EndModal clear={clear} />}
-    </div>
-  );
-}
+    return (
+      <div style={styles.container}>
+        <ActionBoundary user="com" func={func} ready={ready} />
+        <MsgBoundary func={{ ready, setReady }} winner={calc(user, com)} />
+        <ActionBoundary user="user" func={func} ready={ready} />
+        {calc(user, com) && <EndModal clear={clear} />}
+      </div>
+    );
+  })
+);
 
 function EndModal({ clear }) {
   return (
