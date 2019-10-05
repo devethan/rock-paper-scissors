@@ -3,13 +3,14 @@ import { RPSCard } from "./components/ItemCard";
 
 import { inject, observer } from "mobx-react";
 
+const CLIENT_WIDTH = window.innerWidth;
+const CLIENT_HEIGHT = window.innerHeight;
+
 const App = inject("store")(
   observer(({ store }) => {
+    console.log(document.body.clientWidth);
     const { ready, com, user } = store;
-    const { setReady, setCom, setUser } = store;
-    // const [ready, setReady] = useState(false);
-    // const [com, setCom] = useState(null);
-    // const [user, setUser] = useState(null);
+    const { setReady, setCom, setUser, clearState } = store;
 
     // calc score
     function calc(user, com) {
@@ -31,20 +32,12 @@ const App = inject("store")(
       com: item => setCom(item)
     };
 
-    // clear State
-    function clear() {
-      // window.location.reload();
-      setReady(false);
-      setCom(null);
-      setUser(null);
-    }
-
     return (
       <div style={styles.container}>
         <ActionBoundary user="com" func={func} ready={ready} />
         <MsgBoundary func={{ ready, setReady }} winner={calc(user, com)} />
         <ActionBoundary user="user" func={func} ready={ready} />
-        {calc(user, com) && <EndModal clear={clear} />}
+        {calc(user, com) && <EndModal clear={clearState} />}
       </div>
     );
   })
@@ -93,7 +86,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100vh",
+    minHeight: CLIENT_HEIGHT,
     backgroundColor: "#282c34",
     position: "relative"
   },

@@ -14,6 +14,11 @@ class Store {
   setUser = item => {
     this.user = item;
   };
+  clearState = () => {
+    this.ready = false;
+    this.com = null;
+    this.user = null;
+  };
 }
 
 decorate(Store, {
@@ -22,7 +27,8 @@ decorate(Store, {
   user: observable,
   setReady: action,
   setCom: action,
-  setUser: action
+  setUser: action,
+  clearState: action
 });
 
 export { Store };

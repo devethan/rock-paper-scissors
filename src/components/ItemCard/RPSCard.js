@@ -1,28 +1,31 @@
 import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
 
+const CLIENT_WIDTH = window.innerWidth;
+const CLIENT_HEIGHT = window.innerHeight;
+const CARD_WIDTH = CLIENT_WIDTH > 375 ? 150 : 100;
+
 const styles = {
   container: {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
     flexDirection: "column",
-    // height: 200,
     position: "relative"
   },
   btnWrapper: {
-    width: 150,
-    height: 150,
+    width: CARD_WIDTH,
+    height: CARD_WIDTH,
     backgroundColor: "transparent",
     border: "3px solid #09d3ac",
     borderRadius: 2,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    margin: 5
+    margin: 10
   },
   logo: {
-    height: 90
+    height: CARD_WIDTH * 0.6
   },
   text: {
     fontSize: 20,
