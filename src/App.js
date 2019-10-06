@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { RPSCard } from "./components/ItemCard";
 
 import { inject, observer } from "mobx-react";
+// import { Motion, spring, StaggeredMotion } from "react-motion";
+
+const CLIENT_WIDTH = window.innerWidth;
 const CLIENT_HEIGHT = window.innerHeight;
+
+const imageComponent = require("./assets/images/robocop.png");
 
 @inject("store")
 @observer
@@ -42,57 +47,61 @@ class App extends React.Component {
     );
   };
 
-  ActionBoundary = ({ user }) => {
-    // style
-    const readyStyle = this.props.store.ready
-      ? { ...styles.actionBoundary }
-      : { ...styles.actionBoundary, visibility: "hidden" };
-
-    const func = {
-      user: text => this.props.store.setUser(text),
-      com: text => this.props.store.setCom(text)
-    };
+  ActionBoundary = ({ user, com }) => {
+    const userType = user ? "user" : "com";
     return (
-      <div style={readyStyle}>
-        <RPSCard
-          user={user}
-          type="r"
-          func={func[user]}
-          ready={this.props.store.ready}
-        />
-        <RPSCard
-          user={user}
-          type="s"
-          func={func[user]}
-          ready={this.props.store.ready}
-        />
-        <RPSCard
-          user={user}
-          type="p"
-          func={func[user]}
-          ready={this.props.store.ready}
-        />
+      <div style={styles.actionBoundary}>
+        {com && !this.props.store.com ? (
+          <ComImageBox />
+        ) : (
+          <>
+            <RPSCard userType={userType} type="r" />
+            <RPSCard userType={userType} type="s" />
+            <RPSCard userType={userType} type="p" />
+          </>
+        )}
       </div>
     );
   };
 
   render() {
+    const { ready, calc, loading } = this.props.store;
     return (
       <div style={styles.container}>
-        {this.props.store.ready ? (
+        {ready && !loading && (
           <>
-            <this.ActionBoundary user="com" />
+            <this.ActionBoundary com />
             <this.MsgBoundary />
-            <this.ActionBoundary user="user" />
-            {this.props.store.calc && <this.ModalScreen end />}
+            <this.ActionBoundary user />
+            {calc && <this.ModalScreen end />}
           </>
-        ) : (
-          <this.ModalScreen />
         )}
+        {ready && loading && <LoadingBox />}
+        {!ready && <this.ModalScreen />}
       </div>
     );
   }
 }
+
+const ComImageBox = () => (
+  <div style={styles.comImageBox}>
+    <img src={imageComponent} style={styles.comImage} alt="computer" />
+    <p style={{ fontSize: 20, color: "rgb(255, 255, 255, 0.5)" }}>Computer</p>
+  </div>
+);
+
+const LoadingBox = () => {
+  let [idx, setIdx] = useState(0);
+  const typeArr = ["r", "p", "s"];
+
+  useEffect(() => {
+    // console.log("render");
+    if (idx === 2) return;
+    setTimeout(() => setIdx(++idx), 500);
+  });
+
+  return <RPSCard type={typeArr[idx]} />;
+};
 
 const styles = {
   container: {
@@ -100,8 +109,8 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+    minWidth: CLIENT_WIDTH,
     minHeight: CLIENT_HEIGHT,
-    backgroundColor: "#282c34",
     position: "relative"
   },
   msgBoundary: {
@@ -112,7 +121,7 @@ const styles = {
     flexDirection: "column"
   },
   msg: {
-    fontSize: "10vh",
+    fontSize: "8vh",
     fontWeight: "600",
     color: "whitesmoke",
     cursor: "pointer"
@@ -124,6 +133,19 @@ const styles = {
     justifyContent: "center",
     fontSize: "calc(10px + 2vmin)",
     color: "white"
+  },
+  comImageBox: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+    height: 170
+  },
+  comImage: {
+    height: 120,
+    opacity: 0.8,
+    marginBottom: 10
   },
   modalContainer: {
     width: 500,

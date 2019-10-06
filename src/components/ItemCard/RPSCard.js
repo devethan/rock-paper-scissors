@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
+import { inject, observer } from "mobx-react";
 
 const CLIENT_WIDTH = window.innerWidth;
 const CLIENT_HEIGHT = window.innerHeight;
@@ -37,43 +38,49 @@ const styles = {
   }
 };
 
-export function RPSCard({ type, func, ready }) {
-  const [clicked, setClicked] = useState(false);
-  // clear action
-  if (ready === false && clicked === true) setClicked(false);
-
-  const items = {
-    r: {
-      logo: require("../../assets/images/rock.png"),
-      label: "Rock"
-    },
-    p: {
-      logo: require("../../assets/images/paper.png"),
-      label: "Paper"
-    },
-    s: {
-      logo: require("../../assets/images/scissors.png"),
-      label: "Scissors"
-    }
-  };
-  const clickedStyle = clicked
-    ? { ...styles.logo }
-    : { ...styles.logo, opacity: 0.2 };
-
-  // handle action
-  function handleClick() {
-    setClicked(!clicked);
-    func(type);
+const items = {
+  r: {
+    logo: require("../../assets/images/rock.png"),
+    label: "Rock"
+  },
+  p: {
+    logo: require("../../assets/images/paper.png"),
+    label: "Paper"
+  },
+  s: {
+    logo: require("../../assets/images/scissors.png"),
+    label: "Scissors"
   }
-  return (
-    <div style={styles.container}>
-      <Button
-        variant="contained"
-        style={styles.btnWrapper}
-        onClick={() => handleClick()}
-      >
-        <img src={items[type].logo} style={clickedStyle} alt={type} />
-      </Button>
-    </div>
-  );
-}
+};
+
+const RPSCard = inject("store")(
+  observer(({ userType, store, type, style }) => {
+    const [clicked, setClicked] = useState(false);
+    // clear action
+    if (store.ready === false && clicked === true) setClicked(false);
+
+    const clickedStyle =
+      store[userType] === type
+        ? { ...styles.logo }
+        : { ...styles.logo, opacity: 0.2 };
+
+    // handle action
+    function handleClick() {
+      // set user's value
+      store.setUser(type);
+    }
+    return (
+      <div style={style || styles.container}>
+        <Button
+          variant="contained"
+          style={styles.btnWrapper}
+          onClick={() => userType && handleClick()}
+        >
+          <img src={items[type].logo} style={clickedStyle} alt={type} />
+        </Button>
+      </div>
+    );
+  })
+);
+
+export { RPSCard };
