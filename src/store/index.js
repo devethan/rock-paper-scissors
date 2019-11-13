@@ -1,6 +1,9 @@
-import { observable, action, computed } from "mobx";
+import { action, computed, observable } from "mobx";
 
 class Store {
+  constructor(firebase) {
+    this.firebase = firebase;
+  }
   @observable ready = false;
   @observable loading = false;
   @observable com = null;
